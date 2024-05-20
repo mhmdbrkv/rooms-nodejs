@@ -37,7 +37,43 @@ socket.on("error", (message) => {
   alert(message);
 });
 
+socket.on("playVideo", (currentTime) => {
+  const videoElement = document.getElementById("videoElement");
+  videoElement.currentTime = currentTime;
+  videoElement.play();
+});
+
+socket.on("pauseVideo", (currentTime) => {
+  const videoElement = document.getElementById("videoElement");
+  videoElement.currentTime = currentTime;
+  videoElement.pause();
+});
+
+socket.on("seekVideo", (currentTime) => {
+  const videoElement = document.getElementById("videoElement");
+  videoElement.currentTime = currentTime;
+});
+
 function displayVideo(videoUrl) {
   const videoContainer = document.getElementById("videoContainer");
-  videoContainer.innerHTML = `<iframe width="560" height="315" src="${videoUrl}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+  videoContainer.innerHTML = `<video id="videoElement" width="560" height="315" controls>
+                                    <source src="${videoUrl}" type="video/mp4">
+                                </video>`;
+
+  const videoElement = document.getElementById("videoElement");
+
+  videoElement.addEventListener("play", () => {
+    const roomId = document.getElementById("roomIdInput").value;
+    socket.emit("playVideo", roomId, videoElement.currentTime);
+  });
+
+  videoElement.addEventListener("pause", () => {
+    const roomId = document.getElementById("roomIdInput").value;
+    socket.emit("pauseVideo", roomId, videoElement.currentTime);
+  });
+
+  videoElement.addEventListener("seeking", () => {
+    const roomId = document.getElementById("roomIdInput").value;
+    socket.emit("seekVideo", roomId, videoElement.currentTime);
+  });
 }

@@ -1,10 +1,13 @@
 const express = require("express");
+const cors = require("cors");
 const http = require("http");
 const { v4: uuidv4 } = require("uuid");
 const socketIo = require("socket.io");
 
 // Create an Express application
 const app = express();
+
+app.use(cors());
 
 // Create an HTTP server
 const server = http.createServer(app);
@@ -46,6 +49,33 @@ io.on("connection", (socket) => {
       rooms[roomId].videoUrl = videoUrl;
       io.to(roomId).emit("videoEmbedded", videoUrl);
       console.log(`Video URL ${videoUrl} embedded in room ${roomId}`);
+    } else {
+      socket.emit("error", "Room not found");
+    }
+  });
+
+  socket.on("playVideo", (roomId, currentTime) => {
+    if (rooms[roomId]) {
+      io.to(roomId).emit("playVideo", currentTime);
+      console.log(`Playing video in room ${roomId} at ${currentTime}s`);
+    } else {
+      socket.emit("error", "Room not found");
+    }
+  });
+
+  socket.on("pauseVideo", (roomId, currentTime) => {
+    if (rooms[roomId]) {
+      io.to(roomId).emit("pauseVideo", currentTime);
+      console.log(`Pausing video in room ${roomId} at ${currentTime}s`);
+    } else {
+      socket.emit("error", "Room not found");
+    }
+  });
+
+  socket.on("seekVideo", (roomId, currentTime) => {
+    if (rooms[roomId]) {
+      io.to(roomId).emit("seekVideo", currentTime);
+      console.log(`Seeking video in room ${roomId} to ${currentTime}s`);
     } else {
       socket.emit("error", "Room not found");
     }
