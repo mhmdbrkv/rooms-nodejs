@@ -23,7 +23,7 @@ io.on("connection", (socket) => {
 
   socket.on("createRoom", () => {
     const roomId = uuidv4();
-    rooms[roomId] = { users: [] };
+    rooms[roomId] = { users: [], videoUrl: null };
     socket.join(roomId);
     rooms[roomId].users.push(socket.id);
     socket.emit("roomCreated", roomId);
@@ -34,8 +34,18 @@ io.on("connection", (socket) => {
     if (rooms[roomId]) {
       socket.join(roomId);
       rooms[roomId].users.push(socket.id);
-      socket.emit("roomJoined", roomId);
+      socket.emit("roomJoined", roomId, rooms[roomId].videoUrl);
       console.log(`User ${socket.id} joined room ${roomId}`);
+    } else {
+      socket.emit("error", "Room not found");
+    }
+  });
+
+  socket.on("embedVideo", (roomId, videoUrl) => {
+    if (rooms[roomId]) {
+      rooms[roomId].videoUrl = videoUrl;
+      io.to(roomId).emit("videoEmbedded", videoUrl);
+      console.log(`Video URL ${videoUrl} embedded in room ${roomId}`);
     } else {
       socket.emit("error", "Room not found");
     }

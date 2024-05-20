@@ -3,12 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Room Feature</title>
+    <title>Room Feature with Video</title>
   </head>
   <body>
     <button id="createRoom">Create Room</button>
     <button id="joinRoom">Join Room</button>
     <input type="text" id="roomIdInput" placeholder="Room ID" />
+    <div id="roomControls" style="display: none">
+      <input type="text" id="videoUrlInput" placeholder="Video URL" />
+      <button id="embedVideo">Embed Video</button>
+    </div>
+    <div id="videoContainer"></div>
     <script src="/socket.io/socket.io.js"></script>
     <script src="script.js"></script>
   </body>
