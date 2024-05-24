@@ -74,6 +74,7 @@ io.on("connection", (socket) => {
 
   socket.on("seekVideo", (roomId, currentTime) => {
     if (rooms[roomId]) {
+      currentTime = new Date().toLocaleTimeString();
       io.to(roomId).emit("seekVideo", currentTime);
       console.log(`Seeking video in room ${roomId} to ${currentTime}s`);
     } else {
@@ -97,8 +98,9 @@ io.on("connection", (socket) => {
   });
 });
 
-// Start the server
 const PORT = process.env.PORT || 3000;
+
+// Start the server
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

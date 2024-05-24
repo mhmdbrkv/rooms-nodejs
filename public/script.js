@@ -52,6 +52,7 @@ socket.on("pauseVideo", (currentTime) => {
 socket.on("seekVideo", (currentTime) => {
   const videoElement = document.getElementById("videoElement");
   videoElement.currentTime = currentTime;
+  videoElement.seeking();
 });
 
 function displayVideo(videoUrl) {
