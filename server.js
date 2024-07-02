@@ -74,9 +74,20 @@ io.on("connection", (socket) => {
 
   socket.on("seekVideo", (roomId, currentTime) => {
     if (rooms[roomId]) {
-      currentTime = new Date().toLocaleTimeString();
       io.to(roomId).emit("seekVideo", currentTime);
       console.log(`Seeking video in room ${roomId} to ${currentTime}s`);
+    } else {
+      socket.emit("error", "Room not found");
+    }
+  });
+
+  // Handle sending messages
+  socket.on("sendMessage", (roomId, message) => {
+    if (rooms[roomId]) {
+      io.to(roomId).emit("receiveMessage", { userId: socket.id, message });
+      console.log(
+        `Message sent to room ${roomId} by user ${socket.id}: ${message}`
+      );
     } else {
       socket.emit("error", "Room not found");
     }

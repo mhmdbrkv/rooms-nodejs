@@ -37,12 +37,12 @@ input[type="text"] {
     max-width: 800px;
 }
 
-#playlist {
+#chatContainer {
     list-style-type: none;
     padding: 0;
 }
 
-#playlist li {
+#chatContainer p {
     padding: 10px;
     margin: 5px 0;
     background-color: #fff;

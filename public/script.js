@@ -1,4 +1,5 @@
 const socket = io();
+let isUserAction = true;
 
 document.getElementById("createRoom").addEventListener("click", () => {
   socket.emit("createRoom");
@@ -13,6 +14,13 @@ document.getElementById("embedVideo").addEventListener("click", () => {
   const roomId = document.getElementById("roomIdInput").value;
   const videoUrl = document.getElementById("videoUrlInput").value;
   socket.emit("embedVideo", roomId, videoUrl);
+});
+
+document.getElementById("sendMessage").addEventListener("click", () => {
+  const roomId = document.getElementById("roomIdInput").value;
+  const message = document.getElementById("messageInput").value;
+  socket.emit("sendMessage", roomId, message);
+  document.getElementById("messageInput").value = ""; // Clear the input field
 });
 
 socket.on("roomCreated", (roomId) => {
@@ -39,20 +47,29 @@ socket.on("error", (message) => {
 
 socket.on("playVideo", (currentTime) => {
   const videoElement = document.getElementById("videoElement");
+  isUserAction = false;
   videoElement.currentTime = currentTime;
   videoElement.play();
 });
 
 socket.on("pauseVideo", (currentTime) => {
   const videoElement = document.getElementById("videoElement");
+  isUserAction = false;
   videoElement.currentTime = currentTime;
   videoElement.pause();
 });
 
 socket.on("seekVideo", (currentTime) => {
   const videoElement = document.getElementById("videoElement");
+  isUserAction = false;
   videoElement.currentTime = currentTime;
-  videoElement.seeking();
+});
+
+socket.on("receiveMessage", (data) => {
+  const chatContainer = document.getElementById("chatContainer");
+  const messageElement = document.createElement("p");
+  messageElement.textContent = `User ${data.userId}: ${data.message}`;
+  chatContainer.appendChild(messageElement);
 });
 
 function displayVideo(videoUrl) {
@@ -64,17 +81,26 @@ function displayVideo(videoUrl) {
   const videoElement = document.getElementById("videoElement");
 
   videoElement.addEventListener("play", () => {
-    const roomId = document.getElementById("roomIdInput").value;
-    socket.emit("playVideo", roomId, videoElement.currentTime);
+    if (isUserAction) {
+      const roomId = document.getElementById("roomIdInput").value;
+      socket.emit("playVideo", roomId, videoElement.currentTime);
+    }
+    isUserAction = true;
   });
 
   videoElement.addEventListener("pause", () => {
-    const roomId = document.getElementById("roomIdInput").value;
-    socket.emit("pauseVideo", roomId, videoElement.currentTime);
+    if (isUserAction) {
+      const roomId = document.getElementById("roomIdInput").value;
+      socket.emit("pauseVideo", roomId, videoElement.currentTime);
+    }
+    isUserAction = true;
   });
 
   videoElement.addEventListener("seeking", () => {
-    const roomId = document.getElementById("roomIdInput").value;
-    socket.emit("seekVideo", roomId, videoElement.currentTime);
+    if (isUserAction) {
+      const roomId = document.getElementById("roomIdInput").value;
+      socket.emit("seekVideo", roomId, videoElement.currentTime);
+    }
+    isUserAction = true;
   });
 }
