@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const http = require("http");
 const { v4: uuidv4 } = require("uuid");
-const socketIo = require("socket.io");
+const { Server } = require("socket.io");
 
 // Create an Express application
 const app = express();
@@ -13,7 +13,12 @@ app.use(cors());
 const server = http.createServer(app);
 
 // Integrate Socket.io with the server
-const io = socketIo(server);
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"],
+  },
+});
 
 // Serve static files (for the client)
 app.use(express.static("public"));
@@ -109,7 +114,7 @@ io.on("connection", (socket) => {
   });
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 
 // Start the server
 server.listen(PORT, () => {
