@@ -1,174 +1,4 @@
 //script.js
-const socket = io();
-
-document.getElementById("createRoom").addEventListener("click", () => {
-  socket.emit("createRoom");
-});
-
-document.getElementById("joinRoom").addEventListener("click", () => {
-  const roomId = document.getElementById("roomIdInput").value;
-  socket.emit("joinRoom", roomId);
-});
-
-document.getElementById("embedVideo").addEventListener("click", () => {
-  const roomId = document.getElementById("roomIdInput").value;
-  const videoUrl = document.getElementById("videoUrlInput").value;
-  socket.emit("embedVideo", roomId, videoUrl);
-});
-
-socket.on("roomCreated", (roomId) => {
-  alert(`Room created with ID: ${roomId}`);
-  document.getElementById("roomControls").style.display = "block";
-  document.getElementById("roomIdInput").value = roomId;
-});
-
-socket.on("roomJoined", (roomId, videoUrl) => {
-  alert(`Joined room: ${roomId}`);
-  document.getElementById("roomControls").style.display = "block";
-  if (videoUrl) {
-    displayVideo(videoUrl);
-  }
-});
-
-socket.on("videoEmbedded", (videoUrl) => {
-  displayVideo(videoUrl);
-});
-
-socket.on("error", (message) => {
-  alert(message);
-});
-
-socket.on("playVideo", (currentTime) => {
-  const videoElement = document.getElementById("videoElement");
-  videoElement.currentTime = currentTime;
-  videoElement.play();
-});
-
-socket.on("pauseVideo", (currentTime) => {
-  const videoElement = document.getElementById("videoElement");
-  videoElement.currentTime = currentTime;
-  videoElement.pause();
-});
-
-socket.on("seekVideo", (currentTime) => {
-  const videoElement = document.getElementById("videoElement");
-  videoElement.currentTime = currentTime;
-  videoElement.seeking();
-});
-
-function displayVideo(videoUrl) {
-  const videoContainer = document.getElementById("videoContainer");
-  videoContainer.innerHTML = `<video id="videoElement" width="560" height="315" controls>
-                                    <source src="${videoUrl}" type="video/mp4">
-                                </video>`;
-
-  const videoElement = document.getElementById("videoElement");
-
-  videoElement.addEventListener("play", () => {
-    const roomId = document.getElementById("roomIdInput").value;
-    socket.emit("playVideo", roomId, videoElement.currentTime);
-  });
-
-  videoElement.addEventListener("pause", () => {
-    const roomId = document.getElementById("roomIdInput").value;
-    socket.emit("pauseVideo", roomId, videoElement.currentTime);
-  });
-
-  videoElement.addEventListener("seeking", () => {
-    const roomId = document.getElementById("roomIdInput").value;
-    socket.emit("seekVideo", roomId, videoElement.currentTime);
-  });
-}
-
-
-
-
-// html
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Room Feature with Video Sync</title>
-  </head>
-  <body>
-    <button id="createRoom">Create Room</button>
-    <button id="joinRoom">Join Room</button>
-    <input type="text" id="roomIdInput" placeholder="Room ID" />
-    <div id="roomControls" style="display: none">
-      <input type="text" id="videoUrlInput" placeholder="Video URL" />
-      <button id="embedVideo">Embed Video</button>
-    </div>
-    <div id="videoContainer"></div>
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="script.js"></script>
-  </body>
-</html>
-
-//css
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f0f0f0;
-    margin: 0;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-button {
-    padding: 10px 20px;
-    margin: 5px;
-    background-color: #007BFF;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-button:hover {
-    background-color: #0056b3;
-}
-
-input[type="text"] {
-    padding: 10px;
-    margin: 5px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    width: 300px;
-}
-
-#roomControls, #videoContainer {
-    margin-top: 20px;
-    width: 100%;
-    max-width: 800px;
-}
-
-#playlist {
-    list-style-type: none;
-    padding: 0;
-}
-
-#playlist li {
-    padding: 10px;
-    margin: 5px 0;
-    background-color: #fff;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
-
-video {
-    width: 100%;
-    max-width: 100%;
-    height: auto;
-    border-radius: 5px;
-    margin-top: 20px;
-}
-
-
-
-// nodejs (index.js)
 const express = require("express");
 const cors = require("cors");
 const http = require("http");
@@ -245,9 +75,20 @@ io.on("connection", (socket) => {
 
   socket.on("seekVideo", (roomId, currentTime) => {
     if (rooms[roomId]) {
-      currentTime = new Date().toLocaleTimeString();
       io.to(roomId).emit("seekVideo", currentTime);
       console.log(`Seeking video in room ${roomId} to ${currentTime}s`);
+    } else {
+      socket.emit("error", "Room not found");
+    }
+  });
+
+  // Handle sending messages
+  socket.on("sendMessage", (roomId, message) => {
+    if (rooms[roomId]) {
+      io.to(roomId).emit("receiveMessage", { userId: socket.id, message });
+      console.log(
+        `Message sent to room ${roomId} by user ${socket.id}: ${message}`
+      );
     } else {
       socket.emit("error", "Room not found");
     }
@@ -275,3 +116,112 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+
+
+
+
+// html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Room Feature with Video Sync and Chat</title>
+  </head>
+  <body>
+    <button id="createRoom">Create Room</button>
+    <button id="joinRoom">Join Room</button>
+    <input type="text" id="roomIdInput" placeholder="Room ID" />
+    <div id="roomControls" style="display: none">
+      <input type="text" id="videoUrlInput" placeholder="Video URL" />
+      <button id="embedVideo">Embed Video</button>
+    </div>
+    <div id="videoContainer"></div>
+    <div
+      id="chatContainer"
+      style="
+        margin-top: 20px;
+        border: 1px solid #ccc;
+        padding: 10px;
+        width: 100%;
+        max-width: 800px;
+      "
+    >
+      <h3>Chat</h3>
+    </div>
+    <input
+      type="text"
+      id="messageInput"
+      placeholder="Type a message"
+      style="width: 80%"
+    />
+    <button id="sendMessage">Send</button>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
+
+
+//css
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+button {
+    padding: 10px 20px;
+    margin: 5px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+input[type="text"] {
+    padding: 10px;
+    margin: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 300px;
+}
+
+#roomControls, #videoContainer {
+    margin-top: 20px;
+    width: 100%;
+    max-width: 800px;
+}
+
+#chatContainer {
+    list-style-type: none;
+    padding: 0;
+}
+
+#chatContainer p {
+    padding: 10px;
+    margin: 5px 0;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+video {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    border-radius: 5px;
+    margin-top: 20px;
+}
+
+
