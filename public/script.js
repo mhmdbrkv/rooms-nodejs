@@ -113,6 +113,7 @@ function displayVideo(videoUrl) {
                                     <source src="${videoUrl}" type="video/mp4">
                                 </video>`;
   }
+
   const videoElement = document.getElementById("videoElement");
 
   videoElement.addEventListener("play", () => {
