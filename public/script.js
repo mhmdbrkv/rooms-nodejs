@@ -1,6 +1,18 @@
 const socket = io();
 let isUserAction = true;
 
+// for auto refresh
+// if (!sessionStorage.getItem("reloaded")) {
+//   sessionStorage.setItem("reloaded", "true");
+//   location.reload();
+//   sessionStorage.setItem("reloaded", "false");
+// }
+
+const embed = (videoUrl) => {
+  const roomId = document.getElementById("roomIdInput").value;
+  socket.emit("embedVideo", roomId, videoUrl);
+};
+
 document.getElementById("createRoom").addEventListener("click", () => {
   socket.emit("createRoom");
 });
@@ -74,9 +86,9 @@ socket.on("receiveMessage", (data) => {
 
 function displayVideo(videoUrl) {
   const videoContainer = document.getElementById("videoContainer");
-  videoContainer.innerHTML = `<video id="videoElement" width="560" height="315" controls>
+  videoContainer.innerHTML = `<video id="videoElement" width="70" height="30" controls>
                                     <source src="${videoUrl}" type="video/mp4">
-                                </video>`;
+                              </video>`;
 
   const videoElement = document.getElementById("videoElement");
 
