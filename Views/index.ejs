@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Room Feature with Video Sync and Chat</title>
+    <title><%= title %></title>
     <link rel="stylesheet" href="main.css" />
   </head>
   <body>
@@ -11,6 +11,7 @@
       <button id="createRoom">Create Room</button>
       <button id="joinRoom">Join Room</button>
       <input type="text" id="roomIdInput" placeholder="Room ID" />
+
       <div id="roomControls" style="display: none">
         <input type="text" id="videoUrlInput" placeholder="Video URL" />
         <button id="embedVideo">Embed Video</button>
@@ -18,25 +19,22 @@
 
       <div id="videoContainer"></div>
 
-      <div
-        id="chatContainer"
-        style="
-          margin-top: 20px;
-          border: 1px solid #ccc;
-          padding: 10px;
-          width: 100%;
-          max-width: 800px;
-        "
-      >
-        <h3>Chat</h3>
+      <div id="content-container">
+        <div id="chatContainer">
+          <h3>Chat</h3>
+          <input type="text" id="messageInput" placeholder="Type a message" />
+          <button id="sendMessage">Send</button>
+        </div>
+        <ul id="lectures">
+          <% data.map((item, i) => { %>
+          <li>
+            <button id="url" onclick="embed('<%= item.videoUrl %>')">
+              <%= item.title %>
+            </button>
+          </li>
+          <% }) %>
+        </ul>
       </div>
-      <input
-        type="text"
-        id="messageInput"
-        placeholder="Type a message"
-        style="width: 80%"
-      />
-      <button id="sendMessage">Send</button>
     </div>
     <script src="/socket.io/socket.io.js"></script>
     <script src="script.js"></script>

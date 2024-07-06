@@ -1,6 +1,18 @@
 const socket = io();
 let isUserAction = true;
 
+// for auto refresh
+// if (!sessionStorage.getItem("reloaded")) {
+//   sessionStorage.setItem("reloaded", "true");
+//   location.reload();
+//   sessionStorage.setItem("reloaded", "false");
+// }
+
+const embed = (videoUrl) => {
+  const roomId = document.getElementById("roomIdInput").value;
+  socket.emit("embedVideo", roomId, videoUrl);
+};
+
 document.getElementById("createRoom").addEventListener("click", () => {
   socket.emit("createRoom");
 });
@@ -72,12 +84,35 @@ socket.on("receiveMessage", (data) => {
   chatContainer.appendChild(messageElement);
 });
 
+function isEmbeddedYouTubeLink(url) {
+  const embedRegex =
+    /^https:\/\/(www\.youtube\.com\/embed\/|www\.youtube-nocookie\.com\/embed\/)/;
+  return embedRegex.test(url);
+}
+function containsYouTubeEmbedIframe(htmlString) {
+  const iframeRegex =
+    /<iframe\s+[^>]*src=["']https:\/\/(www\.youtube\.com\/embed\/|www\.youtube-nocookie\.com\/embed\/)[^"']*["'][^>]*><\/iframe>/;
+  return iframeRegex.test(htmlString);
+}
+
 function displayVideo(videoUrl) {
-  const videoContainer = document.getElementById("videoContainer");
-  videoContainer.innerHTML = `<video id="videoElement" width="560" height="315" controls>
+  if (isEmbeddedYouTubeLink(videoUrl)) {
+    const videoContainer = document.getElementById("videoContainer");
+    videoContainer.innerHTML = `<iframe width="560" height="315"
+    src=${videoUrl}
+    title="YouTube video player"
+    frameborder="0"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin"
+    allowfullscreen></iframe>`;
+  } else if (containsYouTubeEmbedIframe(videoUrl.toString())) {
+    const videoContainer = document.getElementById("videoContainer");
+    videoContainer.innerHTML = videoUrl.toString();
+  } else {
+    const videoContainer = document.getElementById("videoContainer");
+    videoContainer.innerHTML = `<video id="videoElement" width="70" height="30" controls>
                                     <source src="${videoUrl}" type="video/mp4">
                                 </video>`;
-
+  }
   const videoElement = document.getElementById("videoElement");
 
   videoElement.addEventListener("play", () => {

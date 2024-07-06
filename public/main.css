@@ -1,11 +1,53 @@
 body {
     font-family: Arial, sans-serif;
-    background-color: #f0f0f0;
     margin: 0;
+    padding: 0;
+}
+
+#main-container {
     padding: 20px;
+}
+
+#content-container {
     display: flex;
-    flex-direction: column;
-    align-items: center;
+    justify-content: center;
+    align-items: flex-start;
+    margin-top: 20px;
+}
+
+#chatContainer {
+    border: 1px solid #ccc;
+    padding: 10px;
+    width: 25%;
+    max-width: 300px;
+    margin-right: 20px;
+}
+
+#messageInput {
+    width: calc(100% - 90px);
+    /* Adjust width to fit within the container */
+    margin-right: 10px;
+}
+
+#sendMessage {
+    width: 80px;
+}
+
+#lectures {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 50%;
+}
+
+#lectures li {
+    margin-bottom: 10px;
+}
+
+#lectures button {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
 }
 
 button {
@@ -31,16 +73,8 @@ input[type="text"] {
     width: 300px;
 }
 
-#roomControls, #videoContainer {
-    margin-top: 20px;
-    width: 100%;
-    max-width: 800px;
-}
 
-#chatContainer {
-    list-style-type: none;
-    padding: 0;
-}
+
 
 #chatContainer p {
     padding: 10px;

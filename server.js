@@ -3,11 +3,47 @@ const cors = require("cors");
 const http = require("http");
 const { v4: uuidv4 } = require("uuid");
 const { Server } = require("socket.io");
+const path = require("path");
+
+let tempArr = [];
 
 // Create an Express application
 const app = express();
 
 app.use(cors());
+app.use(express.json());
+
+// Set EJS as the templating engine
+app.set("view engine", "ejs");
+
+// Set the views directory
+app.set("views", path.join(__dirname, "views"));
+
+// Serve static files (for the client)
+app.use(express.static("public"));
+
+app.post("/watchOnRoom", (req, res) => {
+  const { courseSectionData } = req.body;
+
+  // Process the data as needed
+  const lectures = courseSectionData?.reduce((acc, section) => {
+    section?.subSection?.forEach((lecture) => {
+      acc.push(lecture);
+    });
+    return acc;
+  }, []);
+
+  tempArr = [...lectures];
+
+  res.json("Done");
+});
+
+app.get("/watchOnRoom", (req, res) => {
+  res.render("index", {
+    title: "Room Feature with Video Sync and Chat",
+    data: tempArr,
+  });
+});
 
 // Create an HTTP server
 const server = http.createServer(app);
@@ -19,9 +55,6 @@ const io = new Server(server, {
     methods: ["GET", "POST"],
   },
 });
-
-// Serve static files (for the client)
-app.use(express.static("public"));
 
 // Room management
 const rooms = {};
@@ -98,7 +131,7 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("disconnect", () => {
+  socket.on("disconnect", async () => {
     console.log("User disconnected:", socket.id);
     for (const roomId in rooms) {
       const index = rooms[roomId].users.indexOf(socket.id);
@@ -114,8 +147,13 @@ io.on("connection", (socket) => {
   });
 });
 
-const PORT = process.env.PORT || 4000;
+// Error-handling middleware (optional)
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send("Something broke!");
+});
 
+const PORT = process.env.PORT || 5050;
 // Start the server
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
