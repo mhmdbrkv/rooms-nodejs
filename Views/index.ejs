@@ -25,15 +25,6 @@
           <input type="text" id="messageInput" placeholder="Type a message" />
           <button id="sendMessage">Send</button>
         </div>
-        <ul id="lectures">
-          <% data.map((item, i) => { %>
-          <li>
-            <button id="url" onclick="embed('<%= item.videoUrl %>')">
-              <%= item.title %>
-            </button>
-          </li>
-          <% }) %>
-        </ul>
       </div>
     </div>
     <script src="/socket.io/socket.io.js"></script>
