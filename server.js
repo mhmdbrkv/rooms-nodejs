@@ -5,8 +5,6 @@ const { v4: uuidv4 } = require("uuid");
 const { Server } = require("socket.io");
 const path = require("path");
 
-let tempArr = [];
-
 // Create an Express application
 const app = express();
 
@@ -22,39 +20,17 @@ app.set("views", path.join(__dirname, "views"));
 // Serve static files (for the client)
 app.use(express.static("public"));
 
-app.post("/watchOnRoom", (req, res) => {
-  const { courseSectionData } = req.body;
-
-  // Process the data as needed
-  const lectures = courseSectionData?.reduce((acc, section) => {
-    section?.subSection?.forEach((lecture) => {
-      acc.push(lecture);
-    });
-    return acc;
-  }, []);
-
-  tempArr = [...lectures];
-
-  res.json("Done");
-});
-
-app.get("/watchOnRoom", (req, res) => {
+app.get("/", (req, res) => {
   res.render("index", {
-    title: "Room Feature with Video Sync and Chat",
-    data: tempArr,
-  });
+    title: "Room Feature with Video Sync and Chat"
+});
 });
 
 // Create an HTTP server
 const server = http.createServer(app);
 
 // Integrate Socket.io with the server
-const io = new Server(server, {
-  cors: {
-    origin: "http://localhost:3000",
-    methods: ["GET", "POST"],
-  },
-});
+const io = new Server(server);
 
 // Room management
 const rooms = {};
