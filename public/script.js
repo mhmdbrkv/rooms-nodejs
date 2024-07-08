@@ -1,13 +1,6 @@
 const socket = io();
 let isUserAction = true;
 
-// for auto refresh
-// if (!sessionStorage.getItem("reloaded")) {
-//   sessionStorage.setItem("reloaded", "true");
-//   location.reload();
-//   sessionStorage.setItem("reloaded", "false");
-// }
-
 const embed = (videoUrl) => {
   const roomId = document.getElementById("roomIdInput").value;
   socket.emit("embedVideo", roomId, videoUrl);
